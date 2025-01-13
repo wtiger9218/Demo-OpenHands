@@ -6,6 +6,7 @@ function App() {
     return savedTasks ? JSON.parse(savedTasks) : [];
   });
   const [taskInput, setTaskInput] = useState('');
+  const [dueDate, setDueDate] = useState('');
 
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -13,8 +14,13 @@ function App() {
 
   const addTask = () => {
     if (taskInput.trim()) {
-      setTasks([...tasks, taskInput.trim()]);
+      const newTask = {
+        text: taskInput.trim(),
+        dueDate: dueDate || null
+      };
+      setTasks([...tasks, newTask]);
       setTaskInput('');
+      setDueDate('');
     }
   };
 
@@ -25,17 +31,31 @@ function App() {
   return (
     <div className="App">
       <h1>TODO List</h1>
-      <input
-        type="text"
-        value={taskInput}
-        onChange={(e) => setTaskInput(e.target.value)}
-        placeholder="Add a new task"
-      />
-      <button onClick={addTask}>Add Task</button>
+      <div>
+        <input
+          type="text"
+          value={taskInput}
+          onChange={(e) => setTaskInput(e.target.value)}
+          placeholder="Add a new task"
+        />
+        <input
+          type="date"
+          data-testid="date-input"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
+        <button onClick={addTask}>Add Task</button>
+      </div>
       <ul>
         {tasks.map((task, index) => (
           <li key={index}>
-            {task} <button onClick={() => removeTask(index)}>Remove</button>
+            {task.text}
+            {task.dueDate && (
+              <span style={{ marginLeft: '10px', color: '#666' }}>
+                Due: {new Date(task.dueDate).toLocaleDateString()}
+              </span>
+            )}
+            <button onClick={() => removeTask(index)} data-testid={`remove-${index}`}>Remove</button>
           </li>
         ))}
       </ul>
