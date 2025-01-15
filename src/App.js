@@ -7,6 +7,7 @@ function App() {
   });
   const [taskInput, setTaskInput] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [details, setDetails] = useState('');
 
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -16,11 +17,13 @@ function App() {
     if (taskInput.trim()) {
       const newTask = {
         text: taskInput.trim(),
-        dueDate: dueDate || null
+        dueDate: dueDate || null,
+        details: details.trim() || null
       };
       setTasks([...tasks, newTask]);
       setTaskInput('');
       setDueDate('');
+      setDetails('');
     }
   };
 
@@ -44,6 +47,12 @@ function App() {
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
         />
+        <textarea
+          data-testid="details-input"
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+          placeholder="Add details (optional)"
+        />
         <button onClick={addTask}>Add Task</button>
       </div>
       <ul>
@@ -54,6 +63,11 @@ function App() {
               <span style={{ marginLeft: '10px', color: '#666' }}>
                 Due: {new Date(task.dueDate).toLocaleDateString()}
               </span>
+            )}
+            {task.details && (
+              <div style={{ marginLeft: '20px', color: '#666', fontSize: '0.9em' }}>
+                {task.details}
+              </div>
             )}
             <button onClick={() => removeTask(index)} data-testid={`remove-${index}`}>Remove</button>
           </li>
