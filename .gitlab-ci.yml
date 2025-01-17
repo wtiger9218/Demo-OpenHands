@@ -21,10 +21,10 @@ auto-fix:
       when: always
     - when: never
 
-  # cache:
-  #   key: $CI_RUNNER_OS-pip-openhands-resolver-${CI_COMMIT_SHA}
-  #   paths:
-  #     - .cache/pip
+  cache:
+    key: pip-openhands-resolver
+    paths:
+      - .cache/pip
 
   variables:
     LLM_MODEL: "Anthropic/claude-3-5-sonnet-20241022"
