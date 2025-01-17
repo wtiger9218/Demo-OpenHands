@@ -93,8 +93,8 @@ auto-fix:
         echo "Error: GITLAB_API_TOKEN is not set. Needed for GitLab API calls and/or pulling OpenHands repo."
         exit 1
       fi
-      if [ -z "$GIT_TOKNE" ]; then
-        echo "Error: GIT_TOKNE is not set."
+      if [ -z "$GIT_TOKEN" ]; then
+        echo "Error: GIT_TOKEN is not set."
         exit 1
       fi
       if [ -z "$GIT_USERNAME" ]; then
