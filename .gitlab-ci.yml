@@ -90,10 +90,17 @@ auto-fix:
         exit 1
       fi
       if [ -z "$GITLAB_API_TOKEN" ]; then
-        echo "Error: GITLAB_API_TOKEN is not set. Needed for GitLab API calls and/or pulling private repos."
+        echo "Error: GITLAB_API_TOKEN is not set. Needed for GitLab API calls and/or pulling OpenHands repo."
         exit 1
       fi
-
+      if [ -z "$GIT_TOKNE" ]; then
+        echo "Error: GIT_TOKNE is not set."
+        exit 1
+      fi
+      if [ -z "$GIT_USERNAME" ]; then
+        echo "Error: GIT_USERNAME is not set."
+        exit 1
+      fi
       # Optional warnings:
       if [ -z "$LLM_BASE_URL" ]; then
         echo "Warning: LLM_BASE_URL is not set; default endpoint will be used."
@@ -108,14 +115,14 @@ auto-fix:
         NOTE_BODY="Kevin started fixing this issue! You can monitor the progress in GitLab pipeline #$CI_PIPELINE_ID."
         echo $NOTE_BODY
         curl --request POST \
-             --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+             --header "PRIVATE-TOKEN: $GIT_TOKNE" \
              --form "body=${NOTE_BODY}" \
              "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
       elif [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ] && [ -n "$CI_MERGE_REQUEST_IID" ]; then
         NOTE_BODY="Kevin started fixing this Merge Request! You can monitor the progress in GitLab pipeline #$CI_PIPELINE_ID."
         echo $NOTE_BODY
         curl --request POST \
-             --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+             --header "PRIVATE-TOKEN: $GIT_TOKNE" \
              --form "body=${NOTE_BODY}" \
              "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
       else
@@ -160,25 +167,17 @@ auto-fix:
       echo "=== Step 6: Create draft MR or push branch ==="
       cd /tmp
       if [ "$RESOLUTION_SUCCESS" = "true" ]; then
-        MR_TITLE="Draft: Potential fix from Kevin"
-        curl --request POST \
-             --header "PRIVATE-TOKEN: $GIT_TOKEN" \
-             --form "source_branch=${BRANCH_NAME:-kevin-fix-branch}" \
-             --form "target_branch=$TARGET_BRANCH" \
-             --form "title=$MR_TITLE" \
-             --form "remove_source_branch=false" \
-             "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests" \
-             | tee mr_result.json
+        python -m openhands.resolver.send_pull_request \
+          --issue-number "${ISSUE_IID:-0}" \
+          --pr-type draft | tee mr_result.txt && \
+          grep "merge_requests/[0-9]*" mr_result.txt | sed 's/.*\///g' > mr_iid.txt
 
-        # Extract the newly-created MR IID
-        cat mr_result.json | python -c "import sys, json; data=json.load(sys.stdin); print(data.get('iid',''))" > mr_iid.txt || true
       else
-        curl --request POST \
-             --header "PRIVATE-TOKEN: $GIT_TOKEN" \
-             --form "branch=${BRANCH_NAME:-kevin-fail-branch}" \
-             --form "ref=$TARGET_BRANCH" \
-             "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/repository/branches" \
-             | tee branch_result.json
+        cd /tmp && python -m openhands.resolver.send_pull_request \
+          --issue-number "${ISSUE_IID:-0}" \
+          --pr-type branch \
+          --send-on-failure | tee branch_result.txt && \
+          grep "compare/main...[^ ]*" branch_result.txt | sed 's/.*\.\.\.//g' > branch_name.txt
       fi
 
     # ----------------------------------------------------------------------------
@@ -189,18 +188,18 @@ auto-fix:
       cd /tmp
       AGENT_RESPONDED="false"
 
-      if grep -q "No changes to commit" output/output.jsonl; then
+      if grep -q "No changes to commit" /tmp/mr_result.txt; then
         if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
-          NOTE_BODY="Kevin ran but made no code changes."
+          NOTE_BODY="The workflow to fix this issue encountered an error. Kevin failed to create any code changes."
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
           AGENT_RESPONDED="true"
         elif [ "$ISSUE_TYPE" = "mr" ] && [ -n "$MR_IID" ]; then
-          NOTE_BODY="Kevin ran but made no code changes."
+          NOTE_BODY="The workflow to fix this issue encountered an error. Kevin failed to create any code changes."
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_IID/notes"
           AGENT_RESPONDED="true"
@@ -221,7 +220,7 @@ auto-fix:
           if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
             NOTE_BODY="A potential fix has been generated and a draft MR (IID: $NEW_MR_IID) has been created. Please review the changes."
             curl --request POST \
-                 --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+                 --header "PRIVATE-TOKEN: $GIT_TOKNE" \
                  --form "body=$NOTE_BODY" \
                  "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
             AGENT_RESPONDED="true"
@@ -229,7 +228,7 @@ auto-fix:
 
           NOTE_BODY="A potential fix has been generated — please review the changes!"
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$NEW_MR_IID/notes"
           AGENT_RESPONDED="true"
@@ -249,13 +248,13 @@ auto-fix:
 
         if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
           AGENT_RESPONDED="true"
         elif [ "$ISSUE_TYPE" = "mr" ] && [ -n "$MR_IID" ]; then
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_IID/notes"
           AGENT_RESPONDED="true"
