@@ -35,252 +35,240 @@ auto-fix:
     # ----------------------------------------------------------------------------
     # 1) Install Docker + Python + venv, then create and activate a virtual environment
     # ----------------------------------------------------------------------------
-    - echo "=== Before Script ==="
-    # - apt-get update
-    # - apt-get install -y --no-install-recommends docker.io python3.12 python3.12-venv python3-pip git ca-certificates build-essential python3.12-dev libffi-dev curl
-    # - python3.12 -m venv /tmp/venv
-    # - source /tmp/venv/bin/activate
-    # - pip install --upgrade pip
-    # - docker --version
-    # - python --version
-    # - pip --version
-    # - docker version # Check if docker daemon is running before continuing
+    - apt-get update
+    - apt-get install -y --no-install-recommends docker.io python3.12 python3.12-venv python3-pip git ca-certificates build-essential python3.12-dev libffi-dev curl
+    - python3.12 -m venv /tmp/venv
+    - source /tmp/venv/bin/activate
+    - pip install --upgrade pip
+    - docker --version
+    - python --version
+    - pip --version
+    - docker version # Check if docker daemon is running before continuing
 
   script:
-    # - source /tmp/venv/bin/activate
+    - source /tmp/venv/bin/activate
 
     # --------------------------------------------------------
     # 1) Clone & "editable" install + symlink pyproject.toml
     # --------------------------------------------------------
     - |
-      echo "=== Getting the variables ==="
-      echo "=== ISSUE_TYPE: $ISSUE_TYPE ==="
-      echo "=== ISSUE_IID: $ISSUE_IID ==="
-      echo "=== GITLAB_PROJECT_ID: $GITLAB_PROJECT_ID ==="
-      echo "=== GIT_USERNAME: $GIT_USERNAME ==="
-      echo "=== IS_EXPERIMENTAL: $IS_EXPERIMENTAL ==="
-      echo "=== CI_PROJECT_PATH: $CI_PROJECT_PATH ==="
-      echo "=== CI_PROJECT_ID: $CI_PROJECT_ID ==="
-    # - |
-    #   echo "=== Step 1: Cloning & Installing OpenHands in editable mode ==="
-    #   git clone "https://oauth2:${GITLAB_API_TOKEN}@gitlab.com/symbaventures/research-and-development/OpenHands.git" /tmp/OpenHands
-    #   cd /tmp/OpenHands
+      echo "=== Step 1: Cloning & Installing OpenHands in editable mode ==="
+      git clone "https://oauth2:${GITLAB_API_TOKEN}@gitlab.com/symbaventures/research-and-development/OpenHands.git" /tmp/OpenHands
+      cd /tmp/OpenHands
 
-  #     if [ "$IS_EXPERIMENTAL" = "true" ]; then
-  #       echo "Switching to 'resolver_gitlab' branch..."
-  #       git checkout resolver_gitlab
-  #     else
-  #       echo "Using 'main' branch..."
-  #       git checkout main
-  #     fi
+      if [ "$IS_EXPERIMENTAL" = "true" ]; then
+        echo "Switching to 'resolver_gitlab' branch..."
+        git checkout resolver_gitlab
+      else
+        echo "Using 'main' branch..."
+        git checkout main
+      fi
 
-  #     echo "Installing OpenHands in editable mode..."
-  #     pip install -e .
+      echo "Installing OpenHands in editable mode..."
+      pip install -e .
 
-  #     # Symlink pyproject.toml into the site-packages directory so code that
-  #     # tries to read it there won't crash with FileNotFoundError
-  #     PYPROJECT_LOCAL="/tmp/OpenHands/pyproject.toml"
-  #     PYPROJECT_SITE="$(python -c 'import site; print(site.getsitepackages()[0])')/pyproject.toml"
+      # Symlink pyproject.toml into the site-packages directory so code that
+      # tries to read it there won't crash with FileNotFoundError
+      PYPROJECT_LOCAL="/tmp/OpenHands/pyproject.toml"
+      PYPROJECT_SITE="$(python -c 'import site; print(site.getsitepackages()[0])')/pyproject.toml"
 
-  #     if [ -f "$PYPROJECT_LOCAL" ]; then
-  #       echo "Symlinking $PYPROJECT_LOCAL => $PYPROJECT_SITE"
-  #       ln -sf "$PYPROJECT_LOCAL" "$PYPROJECT_SITE"
-  #     else
-  #       echo "Warning: pyproject.toml not found in /tmp/OpenHands?"
-  #     fi
+      if [ -f "$PYPROJECT_LOCAL" ]; then
+        echo "Symlinking $PYPROJECT_LOCAL => $PYPROJECT_SITE"
+        ln -sf "$PYPROJECT_LOCAL" "$PYPROJECT_SITE"
+      else
+        echo "Warning: pyproject.toml not found in /tmp/OpenHands?"
+      fi
 
 
-  #   # ----------------------------------------------------------------------------
-  #   # 2) Check required environment variables
-  #   # ----------------------------------------------------------------------------
-  #   - |
-  #     echo "=== Step 2: Checking required environment variables ==="
-  #     if [ -z "$LLM_API_KEY" ]; then
-  #       echo "Error: LLM_API_KEY is not set."
-  #       exit 1
-  #     fi
-  #     if [ -z "$GITLAB_API_TOKEN" ]; then
-  #       echo "Error: GITLAB_API_TOKEN is not set. Needed for GitLab API calls and/or pulling private repos."
-  #       exit 1
-  #     fi
-  #     if [ -z "$GITLAB_PROJECT_ID" ]; then
-  #       echo "Error: GITLAB_PROJECT_ID is not set. Needed for GitLab API calls."
-  #       exit 1
-  #     fi
+    # ----------------------------------------------------------------------------
+    # 2) Check required environment variables
+    # ----------------------------------------------------------------------------
+    - |
+      echo "=== Step 2: Checking required environment variables ==="
+      if [ -z "$LLM_API_KEY" ]; then
+        echo "Error: LLM_API_KEY is not set."
+        exit 1
+      fi
+      if [ -z "$GITLAB_API_TOKEN" ]; then
+        echo "Error: GITLAB_API_TOKEN is not set. Needed for GitLab API calls and/or pulling private repos."
+        exit 1
+      fi
 
-  #     # Optional warnings:
-  #     if [ -z "$LLM_BASE_URL" ]; then
-  #       echo "Warning: LLM_BASE_URL is not set; default endpoint will be used."
-  #     fi
+      # Optional warnings:
+      if [ -z "$LLM_BASE_URL" ]; then
+        echo "Warning: LLM_BASE_URL is not set; default endpoint will be used."
+      fi
 
-  #   # ----------------------------------------------------------------------------
-  #   # 3) (Optional) Comment on the GitLab Issue or MR to note that the pipeline started
-  #   # ----------------------------------------------------------------------------
-  #   - |
-  #     echo "=== Step 3: (Optional) Comment on GitLab to note pipeline start ==="
-  #     if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
-  #       NOTE_BODY="Kevin started fixing this issue! You can monitor the progress in GitLab pipeline #$CI_PIPELINE_ID."
-  #       curl --request POST \
-  #            --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #            --form "body=${NOTE_BODY}" \
-  #            "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/issues/$ISSUE_IID/notes"
-  #     elif [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ] && [ -n "$CI_MERGE_REQUEST_IID" ]; then
-  #       NOTE_BODY="Kevin started fixing this Merge Request! You can monitor the progress in GitLab pipeline #$CI_PIPELINE_ID."
-  #       curl --request POST \
-  #            --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #            --form "body=${NOTE_BODY}" \
-  #            "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
-  #     else
-  #       echo "Skipping note creation — missing \$ISSUE_TYPE or \$ISSUE_IID / \$CI_MERGE_REQUEST_IID."
-  #     fi
+    # ----------------------------------------------------------------------------
+    # 3) (Optional) Comment on the GitLab Issue or MR to note that the pipeline started
+    # ----------------------------------------------------------------------------
+    - |
+      echo "=== Step 3: (Optional) Comment on GitLab to note pipeline start ==="
+      if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
+        NOTE_BODY="Kevin started fixing this issue! You can monitor the progress in GitLab pipeline #$CI_PIPELINE_ID."
+        echo $NOTE_BODY
+        curl --request POST \
+             --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+             --form "body=${NOTE_BODY}" \
+             "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
+      elif [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ] && [ -n "$CI_MERGE_REQUEST_IID" ]; then
+        NOTE_BODY="Kevin started fixing this Merge Request! You can monitor the progress in GitLab pipeline #$CI_PIPELINE_ID."
+        echo $NOTE_BODY
+        curl --request POST \
+             --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+             --form "body=${NOTE_BODY}" \
+             "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
+      else
+        echo "Skipping note creation — missing \$ISSUE_TYPE or \$ISSUE_IID / \$CI_MERGE_REQUEST_IID."
+      fi
 
-  #   # ----------------------------------------------------------------------------
-  #   # 4) Attempt to resolve the issue with OpenHands
-  #   # ----------------------------------------------------------------------------
-  #   - |
-  #     echo "=== Step 4: Attempt to resolve issue with OpenHands ==="
-  #     mkdir -p /tmp/output
-  #     cd /tmp
-  #     python -m openhands.resolver.resolve_issue \
-  #       --repo "$CI_PROJECT_PATH" \
-  #       --issue-number "${ISSUE_IID:-0}" \
-  #       --issue-type "${ISSUE_TYPE:-issue}" \
-  #       --max-iterations "$MAX_ITERATIONS" \
-  #       --comment-id "${COMMENT_ID:-None}" \
-  #       --is-experimental "${IS_EXPERIMENTAL:-false}" \
-  #       --runtime-container-image "docker.all-hands.dev/all-hands-ai/runtime:0.20-nikolaik" \
-  #       || true
-  #     # Note: '|| true' ensures we don't automatically fail here; 
-  #     # we'll check success/failure next.
+    # ----------------------------------------------------------------------------
+    # 4) Attempt to resolve the issue with OpenHands
+    # ----------------------------------------------------------------------------
+    - |
+      echo "=== Step 4: Attempt to resolve issue with OpenHands ==="
+      mkdir -p /tmp/output
+      cd /tmp
+      python -m openhands.resolver.resolve_issue \
+        --repo "$CI_PROJECT_PATH" \
+        --issue-number "${ISSUE_IID:-0}" \
+        --issue-type "${ISSUE_TYPE:-issue}" \
+        --max-iterations "$MAX_ITERATIONS" \
+        --comment-id "${COMMENT_ID:-None}" \
+        --is-experimental "${IS_EXPERIMENTAL:-false}" \
+        --runtime-container-image "docker.all-hands.dev/all-hands-ai/runtime:0.20-nikolaik" \
+        || true
+      # Note: '|| true' ensures we don't automatically fail here; 
+      # we'll check success/failure next.
 
-  #   # ----------------------------------------------------------------------------
-  #   # 5) Check resolution result
-  #   # ----------------------------------------------------------------------------
-  #   - |
-  #     echo "=== Step 5: Checking resolution result ==="
-  #     RESOLUTION_SUCCESS="false"
-  #     if grep -q '"success":true' /tmp/output/output.jsonl; then
-  #       RESOLUTION_SUCCESS="true"
-  #     fi
-  #     echo "Resolution success? => $RESOLUTION_SUCCESS"
-  #     echo "RESOLUTION_SUCCESS=$RESOLUTION_SUCCESS" >> $CI_JOB_VARIABLES_FILE
+    # ----------------------------------------------------------------------------
+    # 5) Check resolution result
+    # ----------------------------------------------------------------------------
+    - |
+      echo "=== Step 5: Checking resolution result ==="
+      RESOLUTION_SUCCESS="false"
+      if grep -q '"success":true' /tmp/output/output.jsonl; then
+        RESOLUTION_SUCCESS="true"
+      fi
+      echo "Resolution success? => $RESOLUTION_SUCCESS"
+      echo "RESOLUTION_SUCCESS=$RESOLUTION_SUCCESS" >> $CI_JOB_VARIABLES_FILE
 
-  #   # ----------------------------------------------------------------------------
-  #   # 6) Create "draft MR" or push a branch depending on success
-  #   # ----------------------------------------------------------------------------
-  #   - |
-  #     echo "=== Step 6: Create draft MR or push branch ==="
-  #     cd /tmp
-  #     if [ "$RESOLUTION_SUCCESS" = "true" ]; then
-  #       MR_TITLE="Draft: Potential fix from Kevin"
-  #       curl --request POST \
-  #            --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #            --form "source_branch=${BRANCH_NAME:-kevin-fix-branch}" \
-  #            --form "target_branch=$TARGET_BRANCH" \
-  #            --form "title=$MR_TITLE" \
-  #            --form "remove_source_branch=false" \
-  #            "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/merge_requests" \
-  #            | tee mr_result.json
+    # ----------------------------------------------------------------------------
+    # 6) Create "draft MR" or push a branch depending on success
+    # ----------------------------------------------------------------------------
+    - |
+      echo "=== Step 6: Create draft MR or push branch ==="
+      cd /tmp
+      if [ "$RESOLUTION_SUCCESS" = "true" ]; then
+        MR_TITLE="Draft: Potential fix from Kevin"
+        curl --request POST \
+             --header "PRIVATE-TOKEN: $GIT_TOKEN" \
+             --form "source_branch=${BRANCH_NAME:-kevin-fix-branch}" \
+             --form "target_branch=$TARGET_BRANCH" \
+             --form "title=$MR_TITLE" \
+             --form "remove_source_branch=false" \
+             "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests" \
+             | tee mr_result.json
 
-  #       # Extract the newly-created MR IID
-  #       cat mr_result.json | python -c "import sys, json; data=json.load(sys.stdin); print(data.get('iid',''))" > mr_iid.txt || true
-  #     else
-  #       curl --request POST \
-  #            --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #            --form "branch=${BRANCH_NAME:-kevin-fail-branch}" \
-  #            --form "ref=$TARGET_BRANCH" \
-  #            "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/repository/branches" \
-  #            | tee branch_result.json
-  #     fi
+        # Extract the newly-created MR IID
+        cat mr_result.json | python -c "import sys, json; data=json.load(sys.stdin); print(data.get('iid',''))" > mr_iid.txt || true
+      else
+        curl --request POST \
+             --header "PRIVATE-TOKEN: $GIT_TOKEN" \
+             --form "branch=${BRANCH_NAME:-kevin-fail-branch}" \
+             --form "ref=$TARGET_BRANCH" \
+             "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/repository/branches" \
+             | tee branch_result.json
+      fi
 
-  #   # ----------------------------------------------------------------------------
-  #   # 7) Analyze logs: check if no code changes or other states
-  #   # ----------------------------------------------------------------------------
-  #   - |
-  #     echo "=== Step 7: Analyze push logs / partial results ==="
-  #     cd /tmp
-  #     AGENT_RESPONDED="false"
+    # ----------------------------------------------------------------------------
+    # 7) Analyze logs: check if no code changes or other states
+    # ----------------------------------------------------------------------------
+    - |
+      echo "=== Step 7: Analyze push logs / partial results ==="
+      cd /tmp
+      AGENT_RESPONDED="false"
 
-  #     if grep -q "No changes to commit" output/output.jsonl; then
-  #       if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
-  #         NOTE_BODY="Kevin ran but made no code changes."
-  #         curl --request POST \
-  #              --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #              --form "body=$NOTE_BODY" \
-  #              "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/issues/$ISSUE_IID/notes"
-  #         AGENT_RESPONDED="true"
-  #       elif [ "$ISSUE_TYPE" = "mr" ] && [ -n "$MR_IID" ]; then
-  #         NOTE_BODY="Kevin ran but made no code changes."
-  #         curl --request POST \
-  #              --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #              --form "body=$NOTE_BODY" \
-  #              "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/merge_requests/$MR_IID/notes"
-  #         AGENT_RESPONDED="true"
-  #       fi
-  #     fi
+      if grep -q "No changes to commit" output/output.jsonl; then
+        if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
+          NOTE_BODY="Kevin ran but made no code changes."
+          curl --request POST \
+               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --form "body=$NOTE_BODY" \
+               "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
+          AGENT_RESPONDED="true"
+        elif [ "$ISSUE_TYPE" = "mr" ] && [ -n "$MR_IID" ]; then
+          NOTE_BODY="Kevin ran but made no code changes."
+          curl --request POST \
+               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --form "body=$NOTE_BODY" \
+               "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_IID/notes"
+          AGENT_RESPONDED="true"
+        fi
+      fi
 
-  #     echo "AGENT_RESPONDED=$AGENT_RESPONDED" >> $CI_JOB_VARIABLES_FILE
+      echo "AGENT_RESPONDED=$AGENT_RESPONDED" >> $CI_JOB_VARIABLES_FILE
 
-  #   # ----------------------------------------------------------------------------
-  #   # 8) Final comment on the Issue or MR linking the new MR or branch, or fallback error
-  #   # ----------------------------------------------------------------------------
-  #   - |
-  #     echo "=== Step 8: Final comment on GitLab (MR or Issue) ==="
-  #     cd /tmp
-  #     if [ "$RESOLUTION_SUCCESS" = "true" ] && [ -f mr_iid.txt ]; then
-  #       NEW_MR_IID=$(cat mr_iid.txt)
-  #       if [ -n "$NEW_MR_IID" ]; then
-  #         if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
-  #           NOTE_BODY="A potential fix has been generated and a draft MR (IID: $NEW_MR_IID) has been created. Please review the changes."
-  #           curl --request POST \
-  #                --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #                --form "body=$NOTE_BODY" \
-  #                "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/issues/$ISSUE_IID/notes"
-  #           AGENT_RESPONDED="true"
-  #         fi
+    # ----------------------------------------------------------------------------
+    # 8) Final comment on the Issue or MR linking the new MR or branch, or fallback error
+    # ----------------------------------------------------------------------------
+    - |
+      echo "=== Step 8: Final comment on GitLab (MR or Issue) ==="
+      cd /tmp
+      if [ "$RESOLUTION_SUCCESS" = "true" ] && [ -f mr_iid.txt ]; then
+        NEW_MR_IID=$(cat mr_iid.txt)
+        if [ -n "$NEW_MR_IID" ]; then
+          if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
+            NOTE_BODY="A potential fix has been generated and a draft MR (IID: $NEW_MR_IID) has been created. Please review the changes."
+            curl --request POST \
+                 --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+                 --form "body=$NOTE_BODY" \
+                 "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
+            AGENT_RESPONDED="true"
+          fi
 
-  #         NOTE_BODY="A potential fix has been generated — please review the changes!"
-  #         curl --request POST \
-  #              --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #              --form "body=$NOTE_BODY" \
-  #              "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/merge_requests/$NEW_MR_IID/notes"
-  #         AGENT_RESPONDED="true"
-  #       fi
-  #     else
-  #       RESULT_EXPLANATION=""
-  #       if [ -f output/output.jsonl ]; then
-  #         LINE_CONTENT=$(head -n 1 output/output.jsonl)
-  #         RESULT_EXPLANATION=$(echo "$LINE_CONTENT" | python -c "import sys, json; d=json.load(sys.stdin); print(d.get('result_explanation',''))" 2>/dev/null || echo "")
-  #       fi
+          NOTE_BODY="A potential fix has been generated — please review the changes!"
+          curl --request POST \
+               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --form "body=$NOTE_BODY" \
+               "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$NEW_MR_IID/notes"
+          AGENT_RESPONDED="true"
+        fi
+      else
+        RESULT_EXPLANATION=""
+        if [ -f output/output.jsonl ]; then
+          LINE_CONTENT=$(head -n 1 output/output.jsonl)
+          RESULT_EXPLANATION=$(echo "$LINE_CONTENT" | python -c "import sys, json; d=json.load(sys.stdin); print(d.get('result_explanation',''))" 2>/dev/null || echo "")
+        fi
 
-  #       if [ -n "$RESULT_EXPLANATION" ]; then
-  #         NOTE_BODY="An attempt was made to fix this, but it was unsuccessful. Additional details:\n$RESULT_EXPLANATION"
-  #       else
-  #         NOTE_BODY="An attempt was made to fix this, but it was unsuccessful. No further details provided."
-  #       fi
+        if [ -n "$RESULT_EXPLANATION" ]; then
+          NOTE_BODY="An attempt was made to fix this, but it was unsuccessful. Additional details:\n$RESULT_EXPLANATION"
+        else
+          NOTE_BODY="An attempt was made to fix this, but it was unsuccessful. No further details provided."
+        fi
 
-  #       if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
-  #         curl --request POST \
-  #              --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #              --form "body=$NOTE_BODY" \
-  #              "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/issues/$ISSUE_IID/notes"
-  #         AGENT_RESPONDED="true"
-  #       elif [ "$ISSUE_TYPE" = "mr" ] && [ -n "$MR_IID" ]; then
-  #         curl --request POST \
-  #              --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
-  #              --form "body=$NOTE_BODY" \
-  #              "https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/merge_requests/$MR_IID/notes"
-  #         AGENT_RESPONDED="true"
-  #       fi
-  #     fi
+        if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
+          curl --request POST \
+               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --form "body=$NOTE_BODY" \
+               "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
+          AGENT_RESPONDED="true"
+        elif [ "$ISSUE_TYPE" = "mr" ] && [ -n "$MR_IID" ]; then
+          curl --request POST \
+               --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+               --form "body=$NOTE_BODY" \
+               "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_IID/notes"
+          AGENT_RESPONDED="true"
+        fi
+      fi
 
-  #     if [ "$AGENT_RESPONDED" != "true" ]; then
-  #       echo "No final comment was posted; possibly missing \$ISSUE_IID or \$MR_IID."
-  #     fi
+      if [ "$AGENT_RESPONDED" != "true" ]; then
+        echo "No final comment was posted; possibly missing \$ISSUE_IID or \$MR_IID."
+      fi
 
-  # artifacts:
-  #   name: "resolver-output"
-  #   when: always
-  #   paths:
-  #     - /tmp/output/output.jsonl
-  #   expire_in: 30 days
+  artifacts:
+    name: "resolver-output"
+    when: always
+    paths:
+      - /tmp/output/output.jsonl
+    expire_in: 30 days
