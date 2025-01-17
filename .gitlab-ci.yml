@@ -4,9 +4,11 @@ services:
   - name: docker:dind
     alias: docker
 
-# Disable Docker TLS for DinD
 variables:
+  DOCKER_DIND: "docker:20.10.16-dind"                                                          
   DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: "tcp://docker:2375"
+  FF_NETWORK_PER_BUILD: "true"
 
 stages:
   - auto-fix
@@ -41,23 +43,42 @@ auto-fix:
     - docker --version
     - python --version
     - pip --version
+    - docker version # Check if docker daemon is running before continuing
 
   script:
-    # IMPORTANT: Reactivate virtual environment in each script step
     - source /tmp/venv/bin/activate
 
-    # ----------------------------------------------------------------------------
-    # 1) Install OpenHands from your private GitLab repo (inside the venv)
-    # ----------------------------------------------------------------------------
+    # --------------------------------------------------------
+    # 1) Clone & "editable" install + symlink pyproject.toml
+    # --------------------------------------------------------
     - |
-      echo "=== Step 1: Installing OpenHands from the private GitLab repo ==="
+      echo "=== Step 1: Cloning & Installing OpenHands in editable mode ==="
+      git clone "https://oauth2:${GITLAB_API_TOKEN}@gitlab.com/symbaventures/research-and-development/OpenHands.git" /tmp/OpenHands
+      cd /tmp/OpenHands
+
       if [ "$IS_EXPERIMENTAL" = "true" ]; then
-        echo "Installing *experimental* super cool god mode version from GitLab"
-        pip install git+https://oauth2:$GITLAB_API_TOKEN@gitlab.com/symbaventures/research-and-development/OpenHands.git@gitlab-support
+        echo "Switching to 'gitlab-support' branch..."
+        git checkout gitlab-support
       else
-        echo "Installing *normal* un-cool version from GitLab"
-        pip install git+https://oauth2:$GITLAB_API_TOKEN@gitlab.com/symbaventures/research-and-development/OpenHands.git
+        echo "Using 'main' branch..."
+        git checkout main
       fi
+
+      echo "Installing OpenHands in editable mode..."
+      pip install -e .
+
+      # Symlink pyproject.toml into the site-packages directory so code that
+      # tries to read it there won't crash with FileNotFoundError
+      PYPROJECT_LOCAL="/tmp/OpenHands/pyproject.toml"
+      PYPROJECT_SITE="$(python -c 'import site; print(site.getsitepackages()[0])')/pyproject.toml"
+
+      if [ -f "$PYPROJECT_LOCAL" ]; then
+        echo "Symlinking $PYPROJECT_LOCAL => $PYPROJECT_SITE"
+        ln -sf "$PYPROJECT_LOCAL" "$PYPROJECT_SITE"
+      else
+        echo "Warning: pyproject.toml not found in /tmp/OpenHands?"
+      fi
+
 
     # ----------------------------------------------------------------------------
     # 2) Check required environment variables
@@ -117,6 +138,7 @@ auto-fix:
         --max-iterations "$MAX_ITERATIONS" \
         --comment-id "${COMMENT_ID:-None}" \
         --is-experimental "${IS_EXPERIMENTAL:-false}" \
+        --runtime-container-image "docker.all-hands.dev/all-hands-ai/runtime:0.20-nikolaik" \
         || true
       # Note: '|| true' ensures we don't automatically fail here; 
       # we'll check success/failure next.
