@@ -36,10 +36,6 @@ auto-fix:
     # ----------------------------------------------------------------------------
     - apt-get update
     - apt-get install -y --no-install-recommends docker.io python3.12 python3.12-venv python3-pip git ca-certificates build-essential python3.12-dev libffi-dev curl
-    - addgroup --system docker
-    - adduser $USER docker || true
-    - ls -l /var/run/docker.sock || true
-    - chmod 666 /var/run/docker.sock || true
     - python3.12 -m venv /tmp/venv
     - source /tmp/venv/bin/activate
     - pip install --upgrade pip
@@ -138,6 +134,8 @@ auto-fix:
     # ----------------------------------------------------------------------------
     - |
       echo "=== Step 4: Attempt to resolve issue with OpenHands ==="
+      export DEBUG=1
+      export LOG_ALL_EVENTS=true
       mkdir -p /tmp/output
       cd /tmp
       python -m openhands.resolver.resolve_issue \
