@@ -47,7 +47,7 @@ auto-fix:
     # - docker version # Check if docker daemon is running before continuing
 
   script:
-    - source /tmp/venv/bin/activate
+    # - source /tmp/venv/bin/activate
 
     # --------------------------------------------------------
     # 1) Clone & "editable" install + symlink pyproject.toml
