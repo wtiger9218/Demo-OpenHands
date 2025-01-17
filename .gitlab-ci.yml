@@ -9,6 +9,7 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: "tcp://docker:2375"
   FF_NETWORK_PER_BUILD: "true"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 stages:
   - auto-fix
@@ -22,7 +23,7 @@ auto-fix:
     - when: never
 
   cache:
-    key: pip-openhands-cache
+    key: $CI_RUNNER_OS-pip-openhands-resolver-${CI_COMMIT_SHA}
     paths:
       - .cache/pip
 
@@ -40,10 +41,9 @@ auto-fix:
     - python3.12 -m venv /tmp/venv
     - source /tmp/venv/bin/activate
     - pip install --upgrade pip
-    - docker --version
     - python --version
     - pip --version
-    - docker version # Check if docker daemon is running before continuing
+    - docker version
 
   script:
     - source /tmp/venv/bin/activate
