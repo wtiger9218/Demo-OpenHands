@@ -1,14 +1,15 @@
 image: ubuntu:latest
 
 services:
-  - name: docker:dind
-    alias: docker
+  - docker:dind
 
 variables:
-  DOCKER_DIND: "docker:20.10.16-dind"                                                          
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_HOST: "unix:///var/run/docker.sock"
   FF_NETWORK_PER_BUILD: "true"
+
+before_script:
+  - apk add --no-cache docker-cli
+  - docker info
 
 stages:
   - auto-fix
@@ -117,6 +118,7 @@ auto-fix:
              --header "PRIVATE-TOKEN: $GIT_TOKEN" \
              --form "body=${NOTE_BODY}" \
              "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
+        echo ""
       elif [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ] && [ -n "$CI_MERGE_REQUEST_IID" ]; then
         NOTE_BODY="Kevin started fixing this Merge Request! You can monitor the progress in GitLab pipeline #$CI_PIPELINE_ID."
         echo $NOTE_BODY
@@ -124,6 +126,7 @@ auto-fix:
              --header "PRIVATE-TOKEN: $GIT_TOKEN" \
              --form "body=${NOTE_BODY}" \
              "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
+        echo ""
       else
         echo "Skipping note creation — missing \$ISSUE_TYPE or \$ISSUE_IID / \$CI_MERGE_REQUEST_IID."
       fi
