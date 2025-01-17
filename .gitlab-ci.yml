@@ -35,15 +35,16 @@ auto-fix:
     # ----------------------------------------------------------------------------
     # 1) Install Docker + Python + venv, then create and activate a virtual environment
     # ----------------------------------------------------------------------------
-    - apt-get update
-    - apt-get install -y --no-install-recommends docker.io python3.12 python3.12-venv python3-pip git ca-certificates build-essential python3.12-dev libffi-dev curl
-    - python3.12 -m venv /tmp/venv
-    - source /tmp/venv/bin/activate
-    - pip install --upgrade pip
-    - docker --version
-    - python --version
-    - pip --version
-    - docker version # Check if docker daemon is running before continuing
+    - echo "=== Before Script ==="
+    # - apt-get update
+    # - apt-get install -y --no-install-recommends docker.io python3.12 python3.12-venv python3-pip git ca-certificates build-essential python3.12-dev libffi-dev curl
+    # - python3.12 -m venv /tmp/venv
+    # - source /tmp/venv/bin/activate
+    # - pip install --upgrade pip
+    # - docker --version
+    # - python --version
+    # - pip --version
+    # - docker version # Check if docker daemon is running before continuing
 
   script:
     - source /tmp/venv/bin/activate
@@ -55,9 +56,10 @@ auto-fix:
       echo "=== Getting the variables ==="
       echo "=== $ISSUE_TYPE ==="
       echo "=== $ISSUE_NUMBER ==="
-      echo "=== Step 1: Cloning & Installing OpenHands in editable mode ==="
-      git clone "https://oauth2:${GITLAB_API_TOKEN}@gitlab.com/symbaventures/research-and-development/OpenHands.git" /tmp/OpenHands
-      cd /tmp/OpenHands
+    # - |
+    #   echo "=== Step 1: Cloning & Installing OpenHands in editable mode ==="
+    #   git clone "https://oauth2:${GITLAB_API_TOKEN}@gitlab.com/symbaventures/research-and-development/OpenHands.git" /tmp/OpenHands
+    #   cd /tmp/OpenHands
 
   #     if [ "$IS_EXPERIMENTAL" = "true" ]; then
   #       echo "Switching to 'resolver_gitlab' branch..."
