@@ -9,7 +9,6 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: "tcp://docker:2375"
   FF_NETWORK_PER_BUILD: "true"
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 stages:
   - auto-fix
@@ -22,10 +21,10 @@ auto-fix:
       when: always
     - when: never
 
-  cache:
-    key: $CI_RUNNER_OS-pip-openhands-resolver-${CI_COMMIT_SHA}
-    paths:
-      - .cache/pip
+  # cache:
+  #   key: $CI_RUNNER_OS-pip-openhands-resolver-${CI_COMMIT_SHA}
+  #   paths:
+  #     - .cache/pip
 
   variables:
     LLM_MODEL: "Anthropic/claude-3-5-sonnet-20241022"
