@@ -115,14 +115,14 @@ auto-fix:
         NOTE_BODY="Kevin started fixing this issue! You can monitor the progress in GitLab pipeline #$CI_PIPELINE_ID."
         echo $NOTE_BODY
         curl --request POST \
-             --header "PRIVATE-TOKEN: $GIT_TOKNE" \
+             --header "PRIVATE-TOKEN: $GIT_TOKEN" \
              --form "body=${NOTE_BODY}" \
              "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
       elif [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ] && [ -n "$CI_MERGE_REQUEST_IID" ]; then
         NOTE_BODY="Kevin started fixing this Merge Request! You can monitor the progress in GitLab pipeline #$CI_PIPELINE_ID."
         echo $NOTE_BODY
         curl --request POST \
-             --header "PRIVATE-TOKEN: $GIT_TOKNE" \
+             --header "PRIVATE-TOKEN: $GIT_TOKEN" \
              --form "body=${NOTE_BODY}" \
              "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
       else
@@ -192,14 +192,14 @@ auto-fix:
         if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
           NOTE_BODY="The workflow to fix this issue encountered an error. Kevin failed to create any code changes."
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
+               --header "PRIVATE-TOKEN: $GIT_TOKEN" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
           AGENT_RESPONDED="true"
         elif [ "$ISSUE_TYPE" = "mr" ] && [ -n "$MR_IID" ]; then
           NOTE_BODY="The workflow to fix this issue encountered an error. Kevin failed to create any code changes."
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
+               --header "PRIVATE-TOKEN: $GIT_TOKEN" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_IID/notes"
           AGENT_RESPONDED="true"
@@ -220,7 +220,7 @@ auto-fix:
           if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
             NOTE_BODY="A potential fix has been generated and a draft MR (IID: $NEW_MR_IID) has been created. Please review the changes."
             curl --request POST \
-                 --header "PRIVATE-TOKEN: $GIT_TOKNE" \
+                 --header "PRIVATE-TOKEN: $GIT_TOKEN" \
                  --form "body=$NOTE_BODY" \
                  "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
             AGENT_RESPONDED="true"
@@ -228,7 +228,7 @@ auto-fix:
 
           NOTE_BODY="A potential fix has been generated — please review the changes!"
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
+               --header "PRIVATE-TOKEN: $GIT_TOKEN" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$NEW_MR_IID/notes"
           AGENT_RESPONDED="true"
@@ -248,13 +248,13 @@ auto-fix:
 
         if [ "$ISSUE_TYPE" = "issue" ] && [ -n "$ISSUE_IID" ]; then
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
+               --header "PRIVATE-TOKEN: $GIT_TOKEN" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/issues/$ISSUE_IID/notes"
           AGENT_RESPONDED="true"
         elif [ "$ISSUE_TYPE" = "mr" ] && [ -n "$MR_IID" ]; then
           curl --request POST \
-               --header "PRIVATE-TOKEN: $GIT_TOKNE" \
+               --header "PRIVATE-TOKEN: $GIT_TOKEN" \
                --form "body=$NOTE_BODY" \
                "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_IID/notes"
           AGENT_RESPONDED="true"
