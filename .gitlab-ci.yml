@@ -54,8 +54,13 @@ auto-fix:
     # --------------------------------------------------------
     - |
       echo "=== Getting the variables ==="
-      echo "=== $ISSUE_TYPE ==="
-      echo "=== $ISSUE_NUMBER ==="
+      echo "=== ISSUE_TYPE: $ISSUE_TYPE ==="
+      echo "=== ISSUE_IID: $ISSUE_IID ==="
+      echo "=== GITLAB_PROJECT_ID: $GITLAB_PROJECT_ID ==="
+      echo "=== GIT_USERNAME: $GIT_USERNAME ==="
+      echo "=== IS_EXPERIMENTAL: $IS_EXPERIMENTAL ==="
+      echo "=== CI_PROJECT_PATH: $CI_PROJECT_PATH ==="
+      echo "=== CI_PROJECT_ID: $CI_PROJECT_ID ==="
     # - |
     #   echo "=== Step 1: Cloning & Installing OpenHands in editable mode ==="
     #   git clone "https://oauth2:${GITLAB_API_TOKEN}@gitlab.com/symbaventures/research-and-development/OpenHands.git" /tmp/OpenHands
