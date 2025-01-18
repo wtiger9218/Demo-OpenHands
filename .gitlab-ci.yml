@@ -15,6 +15,8 @@ stages:
 
 auto-fix:
   stage: auto-fix
+  tags:
+    - OpenHands
 
   rules:
     - if: $ISSUE_TYPE == "note" || $ISSUE_TYPE == "issue" || $CI_PIPELINE_SOURCE == 'merge_request_event'
