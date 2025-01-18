@@ -1,23 +1,21 @@
-image: ubuntu:latest
+image: ubuntu:22.04
 
-services:
-  - name: docker:dind
-    alias: docker
+# services:
+#   - name: docker:dind
+#     alias: docker
 
-variables:
-  DOCKER_DIND: "docker:20.10.16-dind"
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_HOST: unix:///var/run/docker.sock
-  # DOCKER_HOST: tcp://docker:2375
-  DOCKER_DRIVER: overlay2
+# variables:
+#   DOCKER_DIND: "docker:20.10.16-dind"
+#   DOCKER_TLS_CERTDIR: ""
+#   DOCKER_HOST: unix:///var/run/docker.sock
+#   # DOCKER_HOST: tcp://docker:2375
+#   DOCKER_DRIVER: overlay2
 
 stages:
   - auto-fix
 
 auto-fix:
   stage: auto-fix
-  tags:
-    - OpenHands
 
   rules:
     - if: $ISSUE_TYPE == "note" || $ISSUE_TYPE == "issue" || $CI_PIPELINE_SOURCE == 'merge_request_event'
@@ -147,7 +145,6 @@ auto-fix:
       export GIT_USERNAME="${GIT_USERNAME}"
       export GITLAB_TOKEN="${GITLAB_API_TOKEN}"
 
-      mkdir -p /tmp/output
       cd /tmp
       python -m openhands.resolver.resolve_issue \
         --repo "$CI_PROJECT_PATH" \
