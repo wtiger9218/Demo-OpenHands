@@ -5,7 +5,7 @@ services:
     alias: docker
 
 variables:
-  DOCKER_DIND: "docker:20.10.16-dind"                                                          
+  DOCKER_DIND: "docker:20.10.16-dind"
   DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: "tcp://docker:2375"
 
@@ -55,11 +55,11 @@ auto-fix:
       cd /tmp/OpenHands
 
       if [ "$IS_EXPERIMENTAL" = "true" ]; then
-        echo "Switching to 'resolver_gitlab' branch..."
-        git checkout resolver_gitlab
+        echo "Switching to 'resolver_gitlab_test' branch..."
+        git checkout resolver_gitlab_test
       else
-        echo "Using 'main' branch..."
-        git checkout main
+        echo "Using 'resolver_gitlab_test' branch..."
+        git checkout resolver_gitlab_test
       fi
 
       echo "Installing OpenHands in editable mode..."
@@ -136,6 +136,13 @@ auto-fix:
       echo "=== Step 4: Attempt to resolve issue with OpenHands ==="
       export DEBUG=1
       export LOG_ALL_EVENTS=true
+      export SANDBOX_LOCAL_RUNTIME_URL=http://docker
+      export LLM_MODEL="anthropic/claude-3-5-sonnet-20241022"
+      export LLM_API_KEY="${LLM_API_KEY}"
+      export GIT_TOKEN="${GIT_TOKEN}"
+      export GIT_USERNAME="${GIT_USERNAME}"
+      export GITLAB_TOKEN="${GITLAB_API_TOKEN}"
+
       mkdir -p /tmp/output
       cd /tmp
       python -m openhands.resolver.resolve_issue \
