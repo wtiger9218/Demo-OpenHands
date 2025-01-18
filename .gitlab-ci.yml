@@ -278,9 +278,9 @@ auto-fix:
         echo "No final comment was posted; possibly missing \$ISSUE_IID or \$MR_IID."
       fi
 
-  artifacts:
-    name: "resolver-output"
-    when: always
-    paths:
-      - /tmp/output/output.jsonl
-    expire_in: 30 days
+  # artifacts:
+  #   name: "resolver-output"
+  #   when: always
+  #   paths:
+  #     - /tmp/output/output.jsonl
+  #   expire_in: 30 days
