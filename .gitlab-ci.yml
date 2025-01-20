@@ -282,9 +282,9 @@ auto-fix:
               "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_IID/notes"
         fi
       fi
-  artifacts:
-    name: "resolver-output"
-    when: always
-    paths:
-      - /builds/$CI_PROJECT_PATH/output/output.jsonl
-    expire_in: 30 days
+  # artifacts:
+  #   name: "resolver-output"
+  #   when: always
+  #   paths:
+  #     - /builds/$CI_PROJECT_PATH/output/output.jsonl
+  #   expire_in: 30 days
