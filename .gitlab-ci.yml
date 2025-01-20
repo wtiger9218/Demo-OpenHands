@@ -172,7 +172,6 @@ auto-fix:
         RESOLUTION_SUCCESS="true"
       fi
       echo "Resolution success? => $RESOLUTION_SUCCESS"
-      echo "RESOLUTION_SUCCESS=$RESOLUTION_SUCCESS" >> $CI_JOB_VARIABLES_FILE
 
     # ----------------------------------------------------------------------------
     # 6) Create "draft MR" or push a branch depending on success
