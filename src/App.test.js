@@ -49,3 +49,30 @@ test('can remove a task', () => {
 
   expect(screen.queryByText('Task to remove')).not.toBeInTheDocument();
 });
+
+test('can add a task with details', () => {
+  render(<App />);
+  const input = screen.getByPlaceholderText(/Add a new task/i);
+  const detailsInput = screen.getByTestId('details-input');
+  const addButton = screen.getByText(/Add Task/i);
+
+  fireEvent.change(input, { target: { value: 'Task with details' } });
+  fireEvent.change(detailsInput, { target: { value: 'These are the task details' } });
+  fireEvent.click(addButton);
+
+  expect(screen.getByText('Task with details')).toBeInTheDocument();
+  expect(screen.getByText('These are the task details')).toBeInTheDocument();
+});
+
+test('details input is cleared after adding a task', () => {
+  render(<App />);
+  const input = screen.getByPlaceholderText(/Add a new task/i);
+  const detailsInput = screen.getByTestId('details-input');
+  const addButton = screen.getByText(/Add Task/i);
+
+  fireEvent.change(input, { target: { value: 'Task with details' } });
+  fireEvent.change(detailsInput, { target: { value: 'These are the task details' } });
+  fireEvent.click(addButton);
+
+  expect(detailsInput.value).toBe('');
+});
