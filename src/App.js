@@ -51,7 +51,7 @@ function App() {
           data-testid="details-input"
           value={details}
           onChange={(e) => setDetails(e.target.value)}
-          placeholder="Add details (optional)"
+          placeholder="Add details of TODO (optional)"
         />
         <button onClick={addTask}>Add Task</button>
       </div>
