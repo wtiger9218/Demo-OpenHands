@@ -221,11 +221,11 @@ jobs:
             if (isExperimentalLabel || isIssueCommentExperimental || isReviewCommentExperimental) {
               console.log("Installing experimental OpenHands...");
               await exec.exec("python -m pip install --upgrade pip");
-              await exec.exec("pip install git+https://github.com/wtiger9218/OpenHands/tree/resolver_gitlab_openhands");
+              await exec.exec("pip install git+https://github.com/wtiger9218/OpenHands.git@resolver_gitlab_openhands");
             } else {
               console.log("Installing from requirements.txt...");
               await exec.exec("python -m pip install --upgrade pip");
-              await exec.exec("pip install git+https://github.com/wtiger9218/OpenHands/tree/resolver_gitlab_openhands");
+              await exec.exec("pip install git+https://github.com/wtiger9218/OpenHands.git@resolver_gitlab_openhands");
             }
 
       - name: Attempt to resolve issue
